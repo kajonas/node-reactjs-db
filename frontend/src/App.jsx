@@ -25,7 +25,14 @@ export default function App() {
   const [error,        setError]        = useState(null);
 
   // ---------------------------------------------------------------------------
-  // Load the meal list from the backend on mount
+  // Load the meal list from the backend on *** mount ***
+  //  loadMeals is wrapped in useCallback(..., []), so its reference is stable.
+  //  Result: the effect effectively runs on mount (and would re-run only if loadMeals identity changed).
+  //
+  // getMeals(), just gets calls the api for getting meals
+  // useEffect (below: line 48) With [loadMeals]: run on mount + whenever loadMeals changes.
+  //    Without 'useCallBack' wrapper, loadMeals will be non-memorized, thus repeated effect executions.
+  //    With wrapper executes only when loadMeals contents change (like a meal was added or updated).
   // ---------------------------------------------------------------------------
   const loadMeals = useCallback(async () => {
     setLoading(true);
