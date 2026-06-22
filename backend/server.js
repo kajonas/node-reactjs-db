@@ -3,6 +3,7 @@
  *
  * Responsibilities:
  *   - Load environment variables from .env
+ *   - Initialize Sequelize ORM connection
  *   - Configure middleware (CORS, JSON body parsing)
  *   - Mount the /api/meals router
  *   - Start listening on PORT 3002
@@ -11,6 +12,7 @@
 import 'dotenv/config';
 import cors    from 'cors';
 import express from 'express';
+import sequelize from './db/sequelize.js';
 import mealsRouter from './routes/meals.js';
 
 const app  = express();
@@ -30,6 +32,7 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Start the server after Sequelize is ready
 app.listen(PORT, () => {
   console.log(`🍽️  Taberna Gustus backend running on http://localhost:${PORT}`);
 });

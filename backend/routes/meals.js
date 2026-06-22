@@ -1,7 +1,7 @@
 /**
  * routes/meals.js
  *
- * Full CRUD REST routes for the `meals` table.
+ * Full CRUD REST routes for the `meals` table using Sequelize ORM.
  *
  * Route summary:
  *   GET    /api/meals        - return all meals (ordered by id)
@@ -16,7 +16,7 @@
  */
 
 import { Router } from 'express';
-import { query }  from '../db/index.js';
+import { Meal } from '../models/index.js';
 
 const router = Router();
 
@@ -25,8 +25,11 @@ const router = Router();
 // ---------------------------------------------------------------------------
 router.get('/', async (_req, res) => {
   try {
-    const result = await query('SELECT * FROM meals ORDER BY id ASC');
-    res.json(result.rows);
+    const meals = await Meal.findAll({
+      order: [['id', 'ASC']],
+      raw: true,
+    });
+    res.json(meals);
   } catch (err) {
     console.error('GET /api/meals error:', err.message);
     res.status(500).json({ error: 'Failed to retrieve meals.' });
@@ -39,11 +42,11 @@ router.get('/', async (_req, res) => {
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await query('SELECT * FROM meals WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
+    const meal = await Meal.findByPk(id, { raw: true });
+    if (!meal) {
       return res.status(404).json({ error: `Meal with id ${id} not found.` });
     }
-    res.json(result.rows[0]);
+    res.json(meal);
   } catch (err) {
     console.error(`GET /api/meals/${id} error:`, err.message);
     res.status(500).json({ error: 'Failed to retrieve the meal.' });
@@ -63,13 +66,13 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const result = await query(
-      `INSERT INTO meals (name, calories, cost, ingredients)
-       VALUES ($1, $2, $3, $4)
-       RETURNING *`,
-      [name, Number(calories) || 0, Number(cost) || 0, ingredients]
-    );
-    res.status(201).json(result.rows[0]);
+    const meal = await Meal.create({
+      name,
+      calories: Number(calories) || 0,
+      cost: Number(cost) || 0,
+      ingredients,
+    });
+    res.status(201).json(meal.toJSON());
   } catch (err) {
     console.error('POST /api/meals error:', err.message);
     res.status(500).json({ error: 'Failed to create the meal.' });
@@ -89,17 +92,17 @@ router.put('/:id', async (req, res) => {
   }
 
   try {
-    const result = await query(
-      `UPDATE meals
-       SET name = $1, calories = $2, cost = $3, ingredients = $4
-       WHERE id = $5
-       RETURNING *`,
-      [name, Number(calories) || 0, Number(cost) || 0, ingredients, id]
-    );
-    if (result.rows.length === 0) {
+    const meal = await Meal.findByPk(id);
+    if (!meal) {
       return res.status(404).json({ error: `Meal with id ${id} not found.` });
     }
-    res.json(result.rows[0]);
+    await meal.update({
+      name,
+      calories: Number(calories) || 0,
+      cost: Number(cost) || 0,
+      ingredients,
+    });
+    res.json(meal.toJSON());
   } catch (err) {
     console.error(`PUT /api/meals/${id} error:`, err.message);
     res.status(500).json({ error: 'Failed to update the meal.' });
@@ -112,10 +115,11 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await query('DELETE FROM meals WHERE id = $1 RETURNING id', [id]);
-    if (result.rows.length === 0) {
+    const meal = await Meal.findByPk(id);
+    if (!meal) {
       return res.status(404).json({ error: `Meal with id ${id} not found.` });
     }
+    await meal.destroy();
     res.json({ message: `Meal ${id} deleted successfully.` });
   } catch (err) {
     console.error(`DELETE /api/meals/${id} error:`, err.message);
