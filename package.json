@@ -1,0 +1,12 @@
+{
+  "name": "node-reactjs-db",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["backend", "frontend"],
+  "scripts": {
+    "dev": "start \"Backend\" cmd /k \"cd backend && npm run dev\" && start \"Frontend\" cmd /k \"cd frontend && npm run dev\"",
+    "build": "npm run build --workspace=frontend",
+    "db:setup": "npm run db:setup --workspace=backend"
+  }
+}
+

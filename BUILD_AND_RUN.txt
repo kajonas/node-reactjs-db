@@ -1,0 +1,66 @@
+node-reactjs-db - Build and Run Guide
+=====================================
+
+This project is an npm workspaces monorepo:
+- backend: Node.js + Express + PostgreSQL
+- frontend: React + Vite
+
+Prerequisites
+-------------
+1) Node.js 18+ and npm installed
+2) PostgreSQL installed and running
+3) A PostgreSQL user/password you can connect with
+
+Setup
+-----
+1) Install dependencies (from project root):
+   npm install
+
+2) Create backend .env file:
+   Copy backend/.env.example to backend/.env and update DB values.
+
+   Required values:
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=restaurant_db
+   DB_USER=postgres
+   DB_PASSWORD=your_password
+
+3) Create the database (if it does not already exist):
+   "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -h localhost -c "CREATE DATABASE restaurant_db;"
+
+4) Create tables and seed sample data:
+   npm run db:setup
+
+Run in Development
+------------------
+From project root:
+  npm run dev
+
+This starts:
+- Backend API on http://localhost:3002
+- Frontend app on http://localhost:5174
+
+Build
+-----
+From project root:
+  npm run build
+
+Manual Run (optional)
+---------------------
+Backend only:
+  cd backend
+  npm run dev
+
+Frontend only:
+  cd frontend
+  npm run dev
+
+API Endpoints
+-------------
+GET    /api/meals
+GET    /api/meals/:id
+POST   /api/meals
+PUT    /api/meals/:id
+DELETE /api/meals/:id
+
